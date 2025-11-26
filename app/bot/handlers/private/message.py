@@ -97,12 +97,3 @@ async def handle_incoming_message(
             await copy_message_to_topic()
         else:
             raise
-
-    # Send a confirmation message to the user
-    text = manager.text_message.get("message_sent")
-    # Reply to the edited message with the specified text
-    msg = await message.reply(text)
-    # Wait for 5 seconds before deleting the reply
-    await asyncio.sleep(5)
-    # Delete the reply to the edited message
-    await msg.delete()

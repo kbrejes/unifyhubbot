@@ -72,7 +72,7 @@ async def handler(message: Message, manager: Manager, redis: RedisStorage, album
         # If silent mode is enabled, ignore all messages.
         return
 
-    text = manager.text_message.get("message_sent_to_user")
+    text = None
 
     try:
         if not album:
@@ -87,9 +87,11 @@ async def handler(message: Message, manager: Manager, redis: RedisStorage, album
     except (Exception,):
         text = manager.text_message.get("message_not_sent")
 
-    # Reply to the edited message with the specified text
-    msg = await message.reply(text)
-    # Wait for 5 seconds before deleting the reply
-    await asyncio.sleep(5)
-    # Delete the reply to the edited message
-    await msg.delete()
+    # Send error message if there was an error, but don't send success message
+    if text:
+        # Reply to the message with the error text
+        msg = await message.reply(text)
+        # Wait for 5 seconds before deleting the reply
+        await asyncio.sleep(5)
+        # Delete the reply to the message
+        await msg.delete()

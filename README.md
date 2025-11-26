@@ -112,15 +112,17 @@ You need your own server or you can rent one from a hosting provider. For this, 
 
 Here is a comprehensive reference guide for the environment variables used in the project:
 
-| Variable       | Type  | Description                                                   | Example               |
-|----------------|-------|---------------------------------------------------------------|-----------------------|
-| `BOT_TOKEN`    | `str` | Bot token, obtained from [@BotFather](https://t.me/BotFather) | `123456:qweRTY`       | 
-| `BOT_DEV_ID`   | `int` | User ID of the bot developer or admin                         | `123456789`           |
-| `BOT_GROUP_ID` | `str` | Group ID where the bot operates                               | `-100123456789`       |
-| `BOT_EMOJI_ID` | `str` | The custom emoji ID for the group's topic.                    | `5417915203100613993` |
-| `REDIS_HOST`   | `str` | The hostname or IP address of the Redis server                | `redis`               |
-| `REDIS_PORT`   | `int` | The port number on which the Redis server is running          | `6379`                |
-| `REDIS_DB`     | `int` | The Redis database number                                     | `1`                   |
+| Variable          | Type   | Description                                                   | Example               |
+|-------------------|--------|---------------------------------------------------------------|-----------------------|
+| `BOT_TOKEN`       | `str`  | Bot token, obtained from [@BotFather](https://t.me/BotFather) | `123456:qweRTY`       | 
+| `BOT_DEV_ID`      | `int`  | User ID of the bot developer or admin                         | `123456789`           |
+| `BOT_GROUP_ID`    | `str`  | Group ID where the bot operates                               | `-100123456789`       |
+| `BOT_EMOJI_ID`    | `str`  | The custom emoji ID for the group's topic.                    | `5417915203100613993` |
+| `REDIS_HOST`      | `str`  | The hostname or IP address of the Redis server                | `redis`               |
+| `REDIS_PORT`      | `int`  | The port number on which the Redis server is running          | `6379`                |
+| `REDIS_DB`        | `int`  | The Redis database number                                     | `1`                   |
+| `TGTRACK_ENABLED` | `bool` | Enable TGTrack (Откуда Подписки) integration (optional)       | `true`/`false`        |
+| `TGTRACK_API_KEY` | `str`  | TGTrack API key from [@otkudapodbotbot](https://t.me/otkudapodbotbot) (optional) | `your_api_key` |
 
 <details>
 <summary>List of supporting custom emoji ID's</summary>

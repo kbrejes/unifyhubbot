@@ -79,6 +79,7 @@ class Manager:
             disable_web_page_preview: bool | None = UNSET_DISABLE_WEB_PAGE_PREVIEW,
             disable_notification: bool | None = None,
             reply_markup: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply | None = None,
+            delete_previous_message: bool = True,
     ) -> None:
         """
         Send a message using the bot.
@@ -88,6 +89,7 @@ class Manager:
         :param disable_web_page_preview: Disable web page preview.
         :param disable_notification: Disable notification.
         :param reply_markup: The reply markup.
+        :param delete_previous_message: Delete previous message.
 
         :return: None.
         """
@@ -99,7 +101,10 @@ class Manager:
             disable_notification=disable_notification,
             reply_markup=reply_markup,
         )
-        await self.delete_previous_message()
+        if delete_previous_message:
+            await self.delete_previous_message()
+        else:
+            await self.state.update_data(message_id=message.message_id)
         await self.state.update_data(message_id=message.message_id)
 
     @staticmethod

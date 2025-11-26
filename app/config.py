@@ -44,6 +44,19 @@ class RedisConfig:
 
 
 @dataclass
+class TGTrackConfig:
+    """
+    Data class representing the configuration for TGTrack API.
+
+    Attributes:
+    - API_KEY (str): The API key for TGTrack service.
+    - ENABLED (bool): Whether TGTrack integration is enabled.
+    """
+    API_KEY: str
+    ENABLED: bool = True
+
+
+@dataclass
 class Config:
     """
     Data class representing the overall configuration for the application.
@@ -51,9 +64,11 @@ class Config:
     Attributes:
     - bot (BotConfig): The bot configuration.
     - redis (RedisConfig): The Redis configuration.
+    - tgtrack (TGTrackConfig): The TGTrack configuration.
     """
     bot: BotConfig
     redis: RedisConfig
+    tgtrack: TGTrackConfig | None = None
 
 
 def load_config() -> Config:
@@ -64,6 +79,13 @@ def load_config() -> Config:
     """
     env = Env()
     env.read_env()
+
+    tgtrack_config = None
+    if env.bool("TGTRACK_ENABLED", default=False):
+        tgtrack_config = TGTrackConfig(
+            API_KEY=env.str("TGTRACK_API_KEY"),
+            ENABLED=True,
+        )
 
     return Config(
         bot=BotConfig(
@@ -77,4 +99,5 @@ def load_config() -> Config:
             PORT=env.int("REDIS_PORT"),
             DB=env.int("REDIS_DB"),
         ),
+        tgtrack=tgtrack_config,
     )

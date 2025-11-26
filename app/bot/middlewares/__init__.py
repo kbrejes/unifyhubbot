@@ -4,6 +4,7 @@ from aiogram_newsletter.middleware import AiogramNewsletterMiddleware
 from .album import AlbumMiddleware
 from .manager import ManagerMiddleware
 from .redis import RedisMiddleware
+from .tgtrack import TGTrackMiddleware
 from .throttling import ThrottlingMiddleware
 
 
@@ -18,6 +19,8 @@ def register_middlewares(dp: Dispatcher, **kwargs) -> None:
     Returns:
         None
     """
+    # Register TGTrackMiddleware first (outer middleware to catch all updates)
+    dp.update.outer_middleware.register(TGTrackMiddleware(kwargs["config"]))
     # Register RedisMiddleware with the provided Redis instance
     dp.update.outer_middleware.register(RedisMiddleware(kwargs["redis"]))
     # Register ManagerMiddleware
