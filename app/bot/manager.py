@@ -80,7 +80,8 @@ class Manager:
             disable_notification: bool | None = None,
             reply_markup: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply | None = None,
             delete_previous_message: bool = True,
-    ) -> None:
+            forward_to_group: bool = True,
+    ) -> Message:
         """
         Send a message using the bot.
 
@@ -90,8 +91,9 @@ class Manager:
         :param disable_notification: Disable notification.
         :param reply_markup: The reply markup.
         :param delete_previous_message: Delete previous message.
+        :param forward_to_group: Forward message to group topic (default True).
 
-        :return: None.
+        :return: Sent Message object.
         """
         message = await self.bot.send_message(
             text=text,
@@ -106,6 +108,69 @@ class Manager:
         else:
             await self.state.update_data(message_id=message.message_id)
         await self.state.update_data(message_id=message.message_id)
+        
+        # Forward message to group if enabled
+        if forward_to_group:
+            await self._forward_to_group(message.message_id)
+        
+        return message
+    
+    async def _forward_to_group(self, message_id: int) -> None:
+        """
+        Forward bot's message to the group topic.
+        
+        :param message_id: Message ID to forward
+        :return: None
+        """
+        try:
+            # Get user data from middleware
+            redis = self.middleware_data.get("redis")
+            if not redis:
+                return
+            
+            from app.bot.utils.redis.models import UserData
+            from app.bot.utils.create_forum_topic import create_forum_topic
+            from aiogram.exceptions import TelegramBadRequest
+            
+            user_data: UserData = await redis.get_user(self.user.id)
+            
+            if not user_data or not user_data.message_thread_id:
+                return
+            
+            try:
+                # Try to forward message to existing topic
+                await self.bot.forward_message(
+                    chat_id=self.config.bot.GROUP_ID,
+                    from_chat_id=self.user.id,
+                    message_id=message_id,
+                    message_thread_id=user_data.message_thread_id,
+                )
+            except TelegramBadRequest as e:
+                if "message thread not found" in e.message:
+                    # Topic was deleted, recreate it
+                    import logging
+                    logging.info(f"Topic not found for user {self.user.id}, recreating...")
+                    
+                    user_data.message_thread_id = await create_forum_topic(
+                        self.bot,
+                        self.config,
+                        user_data.full_name,
+                    )
+                    await redis.update_user(user_data.id, user_data)
+                    
+                    # Try to forward again with new topic
+                    await self.bot.forward_message(
+                        chat_id=self.config.bot.GROUP_ID,
+                        from_chat_id=self.user.id,
+                        message_id=message_id,
+                        message_thread_id=user_data.message_thread_id,
+                    )
+                else:
+                    raise
+                    
+        except Exception as e:
+            import logging
+            logging.error(f"Error forwarding message to group: {e}")
 
     @staticmethod
     async def delete_message(message: Message) -> None:

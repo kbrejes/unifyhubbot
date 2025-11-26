@@ -32,7 +32,7 @@ async def handler(call: CallbackQuery, manager: Manager, redis: RedisStorage, us
         manager.text_message.language_code = call.data
         await redis.update_user(user_data.id, user_data)
         await manager.state.update_data(language_code=call.data)
-        await Window.main_menu(manager)
+        await Window.main_menu(manager, user_data=user_data)
         await call.answer()
         return
     
@@ -46,8 +46,21 @@ async def handler(call: CallbackQuery, manager: Manager, redis: RedisStorage, us
     
     if call.data == "source_offline":
         # User selected offline source
+        # Check if already answered (prevent duplicates)
+        state_data = await manager.state.get_data()
+        if state_data.get("source_selected"):
+            await call.answer("Уже выбрано")
+            return
+        
         thanks_text = manager.text_message.get("thanks_feedback")
-        await call.message.edit_text(thanks_text)
+        # Check if message has photo (use edit_caption) or text (use edit_text)
+        if call.message.photo:
+            await call.message.edit_caption(caption=thanks_text)
+        else:
+            await call.message.edit_text(thanks_text)
+        
+        # Mark source as selected
+        await manager.state.update_data(source_selected=True)
         await call.answer()
         return
     
@@ -62,8 +75,21 @@ async def handler(call: CallbackQuery, manager: Manager, redis: RedisStorage, us
     
     if call.data in online_sources:
         # User selected a specific online source
+        # Check if already answered (prevent duplicates)
+        state_data = await manager.state.get_data()
+        if state_data.get("source_selected"):
+            await call.answer("Уже выбрано")
+            return
+        
         thanks_text = manager.text_message.get("thanks_feedback")
-        await call.message.edit_text(thanks_text)
+        # Check if message has photo (use edit_caption) or text (use edit_text)
+        if call.message.photo:
+            await call.message.edit_caption(caption=thanks_text)
+        else:
+            await call.message.edit_text(thanks_text)
+        
+        # Mark source as selected
+        await manager.state.update_data(source_selected=True)
         await call.answer()
         return
 

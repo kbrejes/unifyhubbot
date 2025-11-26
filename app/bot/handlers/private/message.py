@@ -29,7 +29,7 @@ async def handle_edited_message(message: Message, manager: Manager) -> None:
     """
     # Get the text for the edited message
     text = manager.text_message.get("message_edited")
-    # Reply to the edited message with the specified text
+    # Reply to the edited message with the specified text (don't forward to group - it's a service message)
     msg = await message.reply(text)
     # Wait for 5 seconds before deleting the reply
     await asyncio.sleep(5)

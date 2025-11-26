@@ -105,3 +105,15 @@ class RedisStorage:
         async with self.redis.client() as client:
             user_ids = await client.hkeys(self.NAME)
             return [int(user_id) for user_id in user_ids]
+    
+    async def get_next_request_id(self) -> int:
+        """
+        Get and increment the next request ID counter.
+        
+        :return: The next request ID.
+        """
+        counter_key = "request_id_counter"
+        async with self.redis.client() as client:
+            # Increment the counter and return the new value
+            request_id = await client.incr(counter_key)
+            return request_id

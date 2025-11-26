@@ -23,8 +23,7 @@ async def handler(
     """
     Handles the /start command.
 
-    If the user has already selected a language, displays the main menu window.
-    Otherwise, prompts the user to select a language.
+    Sets language to Russian by default and displays the main menu window.
 
     :param message: Message object.
     :param manager: Manager object.
@@ -32,14 +31,33 @@ async def handler(
     :param user_data: UserData object.
     :return: None
     """
-    if user_data.language_code:
-        await Window.main_menu(manager)
-    else:
-        await Window.select_language(manager)
-    await manager.delete_message(message)
-
-    # Create the forum topic
+    # Set default language to Russian if not set
+    if not user_data.language_code:
+        user_data.language_code = "ru"
+        manager.text_message.language_code = "ru"
+    
+    # Generate request ID if not exists
+    if not user_data.request_id:
+        user_data.request_id = await redis.get_next_request_id()
+    
+    # Save user data
+    await redis.update_user(user_data.id, user_data)
+    
+    # Reset state to allow new flow (clear source_selected flag)
+    await manager.state.update_data(
+        language_code="ru", 
+        request_id=user_data.request_id,
+        source_selected=False
+    )
+    
+    # Create the forum topic first
     await get_or_create_forum_topic(message.bot, redis, manager.config, user_data)
+    
+    # Delete user's /start command message
+    await manager.delete_message(message)
+    
+    # Show main menu and forward bot messages to group
+    await Window.main_menu(manager, user_data=user_data)
 
 
 @router.message(Command("language"))
